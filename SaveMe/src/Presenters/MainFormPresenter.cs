@@ -1,6 +1,8 @@
 ﻿using src.Services;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Text;
 using System.Threading;
 
@@ -10,13 +12,13 @@ namespace src.Presenters
     ///     Feeds data to the View to be displayed.
     /// </summary>
     /// <typeparam name="TView">The View this presenter interacts with.</typeparam>
-    internal class MainFormPresenter<TView> : IPresenter<TView> where TView : IMainFormView
+    public class MainFormPresenter<TView> : IPresenter<TView> where TView : IMainFormView
     {
         public TView View { get; set; }
-
         public Timer Timer { get; private set; }
-
-        private readonly IOfficeApplicationService _officeApplicationService;
+        private readonly IOfficeApplicationSaver _saver;
+        private readonly IOfficeProcessDetector _detector;
+        public BindingList<string> OpenOfficeProcesses { get; private set; }
 
         public int CurrentAutoSaveFrequency { get; private set; }
 
@@ -33,25 +35,19 @@ namespace src.Presenters
             {"1 Hour", 60000 }
         };
 
-        public MainFormPresenter(IOfficeApplicationService officeApplicationService)
+        public MainFormPresenter(IOfficeApplicationSaver saver, IOfficeProcessDetector detector)
         {
-            PopulateListOfOpenOfficeApplications();
-            SubscribeToViewEvents();
-            InitializeTimer();
-            _officeApplicationService = officeApplicationService;
+            _saver = saver;
+            _detector = detector;
+            GetOpenOfficeProcesses();
         }
 
-        private void PopulateListOfOpenOfficeApplications()
+        private void GetOpenOfficeProcesses()
         {
-        }
-
-        private void InitializeTimer()
-        {
-            Timer = new Timer(SaveSelectedApplications, null, 0, CurrentAutoSaveFrequency);
-        }
-
-        private void SaveSelectedApplications(object state)
-        {
+            foreach(var process in _detector.FetchOpenOfficeProcesses())
+            {
+                OpenOfficeProcesses.Add(process.MainModule.FileName);
+            }
         }
 
         public void SubscribeToViewEvents()
