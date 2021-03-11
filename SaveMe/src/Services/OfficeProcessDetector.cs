@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Prism.Events;
+using src.Events;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Management;
@@ -10,36 +12,54 @@ namespace src.Services
     {
         private readonly ManagementEventWatcher _processStartEvent = new("SELECT * FROM Win32_ProcessStartTrace");
         private readonly ManagementEventWatcher _processStopEvent = new("SELECT * FROM Win32_ProcessStopTrace");
-        public event EventHandler ApplicationClosedEvent;
+        private IEventAggregator _ea;
 
-        public OfficeProcessDetector()
+        public OfficeProcessDetector(IEventAggregator ea)
         {
             _processStartEvent.EventArrived += _processStartEvent_EventArrived;
             _processStopEvent.EventArrived += _processStopEvent_EventArrived;
             _processStartEvent.Start();
+            _ea = ea;
         }
 
         private void _processStopEvent_EventArrived(object sender, EventArrivedEventArgs e)
         {
-            var processName = e.NewEvent.Properties["ProcessName"].Value.ToString();
-            if ()
+            (var closedProcessName, var closedProcessId) = GetDataFromProcessEvent(e);
+            if (OfficeProcesses.Names.Contains(closedProcessName))
+            {
+                var closedProcess = Process.GetProcessById(closedProcessId);
+                _ea.GetEvent<OfficeAppClosedEvent>().Publish(closedProcess);
+            }
         }
 
         private void _processStartEvent_EventArrived(object sender, EventArrivedEventArgs e)
         {
-            var processName = e.NewEvent.Properties["ProcessName"].Value.ToString();
-            
+            (var newProcessName, var newProcessId) = GetDataFromProcessEvent(e);
+            if (OfficeProcesses.Names.Contains(newProcessName))
+            {
+                var newProcess = Process.GetProcessById(newProcessId);
+                _ea.GetEvent<OfficeAppOpenedEvent>().Publish(newProcess);
+            }
         }
 
-        public IEnumerable<Process> FetchOpenOfficeProcesses()
+        private (string, int) GetDataFromProcessEvent(EventArrivedEventArgs e)
         {
-            foreach(var appType in Enum.GetValues(typeof(OfficeApplicationType)))
+            var processName = e.NewEvent.Properties["ProcessName"].Value.ToString();
+            var processId = Int32.Parse(e.NewEvent.Properties["ProcessId"].Value.ToString());
+            return (processName, processId);
+        }
+
+        public List<Process> FetchOpenOfficeProcesses()
+        {
+            var processes = new List<Process>();
+            foreach (var processName in OfficeProcesses.Names)
             {
-                foreach(var process in Process.GetProcessesByName($"{appType}.exe"))
+                foreach (var process in Process.GetProcessesByName(processName))
                 {
-                    yield return process;
+                    processes.Add(process);
                 }
             }
+            return processes;
         }
     }
 }

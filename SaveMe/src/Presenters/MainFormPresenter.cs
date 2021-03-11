@@ -1,8 +1,11 @@
-﻿using src.Services;
+﻿using Prism.Events;
+using src.Events;
+using src.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using System.Threading;
 
@@ -16,11 +19,29 @@ namespace src.Presenters
     {
         public TView View { get; set; }
         public Timer Timer { get; private set; }
-        private readonly IOfficeApplicationSaver _saver;
-        private readonly IOfficeProcessDetector _detector;
-        public BindingList<string> OpenOfficeProcesses { get; private set; }
-
         public int CurrentAutoSaveFrequency { get; private set; }
+        public BindingList<string> OpenOfficeAppNames;
+        private readonly IOfficeAppService _service;
+        private IEventAggregator _ea;
+
+        public MainFormPresenter(IOfficeAppService service, IEventAggregator ea)
+        {
+            _service = service;
+            _service.OpenOfficeProcesses.ForEach(p => OpenOfficeAppNames.Add(p.MainModule.FileName));
+            _ea = ea;
+            _ea.GetEvent<OfficeAppClosedEvent>().Subscribe(HandleAppClosed);
+            _ea.GetEvent<OfficeAppOpenedEvent>().Subscribe(HandleAppOpened);
+        }
+
+        private void HandleAppOpened(Process p)
+        {
+            OpenOfficeAppNames.Add(p.MainModule.FileName);
+        }
+
+        private void HandleAppClosed(Process p)
+        {
+            OpenOfficeAppNames.Remove(p.MainModule.FileName);
+        }
 
         /// <summary>
         ///     A dictonary with
@@ -34,21 +55,6 @@ namespace src.Presenters
             {"30 Minutes", 30000 },
             {"1 Hour", 60000 }
         };
-
-        public MainFormPresenter(IOfficeApplicationSaver saver, IOfficeProcessDetector detector)
-        {
-            _saver = saver;
-            _detector = detector;
-            GetOpenOfficeProcesses();
-        }
-
-        private void GetOpenOfficeProcesses()
-        {
-            foreach(var process in _detector.FetchOpenOfficeProcesses())
-            {
-                OpenOfficeProcesses.Add(process.MainModule.FileName);
-            }
-        }
 
         public void SubscribeToViewEvents()
         {

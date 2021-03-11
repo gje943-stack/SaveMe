@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using src.Events;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace src.Services
 {
     public interface IOfficeProcessDetector
     {
-        IEnumerable<Process> FetchOpenOfficeProcesses();
+        List<Process> FetchOpenOfficeProcesses();
     }
 }
