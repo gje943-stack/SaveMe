@@ -14,14 +14,16 @@ namespace src
     /// <summary>
     ///     The main form of the application and app entry point.
     /// </summary>
-    public partial class MainForm : Form, IMainFormView
+    public partial class MainFormView : Form, IMainFormView
     {
         public event EventHandler AutoSaveFrequencySelected;
+        public BindingList<string> OpenOfficeAppNames { get; set; } = new();
 
-        public MainForm()
+        public MainFormView()
         {
             InitializeComponent();
             InitializePresenter();
+            listAllApplications.DataSource = OpenOfficeAppNames;
         }
 
         public void InitializePresenter()

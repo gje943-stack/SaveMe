@@ -1,6 +1,7 @@
 ﻿using Prism.Events;
 using src.Events;
 using src.Services;
+using src.Static;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -20,41 +21,37 @@ namespace src.Presenters
         public TView View { get; set; }
         public Timer Timer { get; private set; }
         public int CurrentAutoSaveFrequency { get; private set; }
-        public BindingList<string> OpenOfficeAppNames;
         private readonly IOfficeAppService _service;
         private IEventAggregator _ea;
 
         public MainFormPresenter(IOfficeAppService service, IEventAggregator ea)
         {
             _service = service;
-            _service.OpenOfficeProcesses.ForEach(p => OpenOfficeAppNames.Add(p.MainModule.FileName));
             _ea = ea;
+        }
+
+
+        public void InitialSetup()
+        {
             _ea.GetEvent<OfficeAppClosedEvent>().Subscribe(HandleAppClosed);
             _ea.GetEvent<OfficeAppOpenedEvent>().Subscribe(HandleAppOpened);
+            View.Load += View_Load;
+        }
+
+        private void View_Load(object sender, EventArgs e)
+        {
+            _service.OpenOfficeProcesses.ForEach(p => View.OpenOfficeAppNames.Add(p.MainWindowTitle));
         }
 
         private void HandleAppOpened(Process p)
         {
-            OpenOfficeAppNames.Add(p.MainModule.FileName);
+            View.OpenOfficeAppNames.Add(p.MainWindowTitle);
         }
 
         private void HandleAppClosed(Process p)
         {
-            OpenOfficeAppNames.Remove(p.MainModule.FileName);
+            View.OpenOfficeAppNames.Remove(p.MainWindowTitle);
         }
-
-        /// <summary>
-        ///     A dictonary with
-        ///     Key: autosave frequencies in string format.
-        ///     Value: autosave frequencies in milliseconds.
-        /// </summary>
-        private readonly Dictionary<string, int> _autoSaveFrequencies = new Dictionary<string, int>
-        {
-            {"1 Minute", 6000 },
-            {"10 Minutes", 10000 },
-            {"30 Minutes", 30000 },
-            {"1 Hour", 60000 }
-        };
 
         public void SubscribeToViewEvents()
         {
@@ -68,7 +65,7 @@ namespace src.Presenters
 
         public void ChangeAutoSaveFrequency()
         {
-            var newFreq = _autoSaveFrequencies[View.DropDownAutoSaveFrequency.SelectedItem.ToString()];
+            var newFreq = AutoSaveFrequencies._[View.DropDownAutoSaveFrequency.SelectedItem.ToString()];
             CurrentAutoSaveFrequency = newFreq;
         }
     }

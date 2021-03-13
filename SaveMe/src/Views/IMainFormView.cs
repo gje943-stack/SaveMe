@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Windows.Forms;
 
 namespace src
@@ -7,8 +8,11 @@ namespace src
     {
         ListBox DropDownAutoSaveFrequency { get; set; }
         CheckedListBox ListOfOpenOfficeApplications { get; set; }
+        BindingList<string> OpenOfficeAppNames { get; set; }
 
         event EventHandler AutoSaveFrequencySelected;
+
+        event EventHandler Load;
 
         void InitializePresenter();
     }

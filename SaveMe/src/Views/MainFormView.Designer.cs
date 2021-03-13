@@ -1,7 +1,7 @@
 ﻿
 namespace src
 {
-    partial class MainForm
+    partial class MainFormView
     {
         /// <summary>
         ///  Required designer variable.
@@ -76,6 +76,10 @@ namespace src
             // 
             this.dropdownAutoSaveFrequencies.FormattingEnabled = true;
             this.dropdownAutoSaveFrequencies.ItemHeight = 15;
+            this.dropdownAutoSaveFrequencies.Items.AddRange(new object[] {
+            "10 Minutes",
+            "30 Minute",
+            "1 Hour"});
             this.dropdownAutoSaveFrequencies.Location = new System.Drawing.Point(200, 37);
             this.dropdownAutoSaveFrequencies.Name = "dropdownAutoSaveFrequencies";
             this.dropdownAutoSaveFrequencies.Size = new System.Drawing.Size(76, 19);
@@ -135,13 +139,13 @@ namespace src
             this.listAllApplications.Size = new System.Drawing.Size(362, 264);
             this.listAllApplications.TabIndex = 0;
             // 
-            // MainForm
+            // MainFormView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(368, 339);
             this.Controls.Add(this.tlpMainLayout);
-            this.Name = "MainForm";
+            this.Name = "MainFormView";
             this.Text = "Form1";
             this.tlpMainLayout.ResumeLayout(false);
             this.panelButtonsContainer.ResumeLayout(false);

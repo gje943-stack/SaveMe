@@ -14,6 +14,7 @@ namespace src.Factories
         {
             var presenter = ActivatorUtilities.GetServiceOrCreateInstance<IPresenter<TView>>(_host.Services);
             presenter.View = view;
+            presenter.InitialSetup();
             return presenter;
         }
     

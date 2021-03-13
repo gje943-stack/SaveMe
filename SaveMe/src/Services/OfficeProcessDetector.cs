@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Management;
 using System.Text;
+using System.Threading;
 
 namespace src.Services
 {
@@ -19,13 +20,14 @@ namespace src.Services
             _processStartEvent.EventArrived += _processStartEvent_EventArrived;
             _processStopEvent.EventArrived += _processStopEvent_EventArrived;
             _processStartEvent.Start();
+            _processStopEvent.Start();
             _ea = ea;
         }
 
         private void _processStopEvent_EventArrived(object sender, EventArrivedEventArgs e)
         {
             (var closedProcessName, var closedProcessId) = GetDataFromProcessEvent(e);
-            if (OfficeProcesses.Names.Contains(closedProcessName))
+            if (OfficeProcesses.NamesWithExe.Contains(closedProcessName))
             {
                 var closedProcess = Process.GetProcessById(closedProcessId);
                 _ea.GetEvent<OfficeAppClosedEvent>().Publish(closedProcess);
@@ -35,8 +37,9 @@ namespace src.Services
         private void _processStartEvent_EventArrived(object sender, EventArrivedEventArgs e)
         {
             (var newProcessName, var newProcessId) = GetDataFromProcessEvent(e);
-            if (OfficeProcesses.Names.Contains(newProcessName))
+            if (OfficeProcesses.NamesWithExe.Contains(newProcessName))
             {
+                Thread.Sleep(5000);
                 var newProcess = Process.GetProcessById(newProcessId);
                 _ea.GetEvent<OfficeAppOpenedEvent>().Publish(newProcess);
             }
@@ -52,9 +55,9 @@ namespace src.Services
         public List<Process> FetchOpenOfficeProcesses()
         {
             var processes = new List<Process>();
-            foreach (var processName in OfficeProcesses.Names)
+            foreach (var process in Process.GetProcesses())
             {
-                foreach (var process in Process.GetProcessesByName(processName))
+                if (OfficeProcesses.NamesWithoutExe.Contains(process.ProcessName))
                 {
                     processes.Add(process);
                 }

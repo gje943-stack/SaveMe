@@ -8,6 +8,8 @@ namespace src.Presenters
     {
         TView View { get; set; }
 
+        void InitialSetup();
+
         void SubscribeToViewEvents();
     }
 }
