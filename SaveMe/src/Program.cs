@@ -30,7 +30,7 @@ namespace src
                 {
                     services.AddTransient<IPresenter<MainFormView>, MainFormPresenter<MainFormView>>();
                     services.AddTransient<IOfficeAppService, OfficeAppService>();
-                    services.AddTransient<IOfficeProcessDetector, OfficeProcessDetector>();
+                    services.AddTransient<IOfficeProcessManager<ExcelProcessManager>, ExcelProcessManager>();
                     services.AddTransient<IOfficeApplicationSaver, OfficeApplicationSaver>();
                     services.AddSingleton<IMainFormView, MainFormView>();
                     services.AddSingleton<IEventAggregator, EventAggregator>();

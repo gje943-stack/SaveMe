@@ -20,7 +20,7 @@ namespace src.Services
             _detector = detector;
             _ea = ea;
             _ea.GetEvent<OfficeAppClosedEvent>().Subscribe(HandleAppClosed);
-            _ea.GetEvent<OfficeAppOpenedEvent>().Subscribe(HandleAppOpened);
+            _ea.GetEvent<ExcelAppOpenedEvent>().Subscribe(HandleAppOpened);
             OpenOfficeProcesses = _detector.FetchOpenOfficeProcesses();
         }
 

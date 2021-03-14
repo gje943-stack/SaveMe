@@ -6,5 +6,5 @@ using System.Text;
 
 namespace src.Events
 {
-    public class OfficeAppOpenedEvent : PubSubEvent<Process> { }
+    public class ExcelAppOpenedEvent : PubSubEvent<string> { }
 }

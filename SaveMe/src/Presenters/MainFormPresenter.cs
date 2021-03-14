@@ -30,11 +30,10 @@ namespace src.Presenters
             _ea = ea;
         }
 
-
         public void InitialSetup()
         {
             _ea.GetEvent<OfficeAppClosedEvent>().Subscribe(HandleAppClosed);
-            _ea.GetEvent<OfficeAppOpenedEvent>().Subscribe(HandleAppOpened);
+            _ea.GetEvent<ExcelAppOpenedEvent>().Subscribe(HandleAppOpened);
             View.Load += View_Load;
         }
 
