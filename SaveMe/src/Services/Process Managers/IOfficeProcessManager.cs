@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Management;
+﻿using src.Models;
+using System.Collections.Generic;
 
-namespace src.Services
+namespace src.Services.Process_Managers
 {
-    public interface IOfficeProcessManager<TProcessManager> where TProcessManager : IOfficeProcessManager<TProcessManager>
+    public interface IOfficeProcessManager
     {
-        List<string> FetchOpenProcesses();
-
-        (string, int) GetDataFromProcessEvent(EventArrivedEventArgs e);
+        IEnumerable<IOfficeApplication> FetchOpenExcelProcesses();
+        IEnumerable<IOfficeApplication> FetchOpenPowerPointApplications();
+        IEnumerable<IOfficeApplication> FetchOpenWordProcesses();
     }
 }

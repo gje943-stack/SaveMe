@@ -1,5 +1,8 @@
 ﻿using Prism.Events;
 using src.Events;
+using src.Models;
+using src.Repo;
+using src.Services.Process_Managers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,28 +13,50 @@ namespace src.Services
     public class OfficeAppService : IOfficeAppService
     {
         private readonly IOfficeApplicationSaver _saver;
-        private readonly IOfficeProcessDetector _detector;
         private IEventAggregator _ea;
-        public List<Process> OpenOfficeProcesses { get; private set; }
+        private readonly IOfficeAppRepo _repo;
+        private readonly IOfficeProcessManager _manager;
 
-        public OfficeAppService(IOfficeApplicationSaver saver, IOfficeProcessDetector detector, IEventAggregator ea)
+        public event EventHandler AppClosedEvent;
+        public event EventHandler AppOpenedEvent;
+
+        public OfficeAppService(IOfficeApplicationSaver saver,
+            IEventAggregator ea,
+            IOfficeAppRepo repo, IOfficeProcessManager manager)
         {
             _saver = saver;
-            _detector = detector;
-            _ea = ea;
+            _repo = repo;
+            _manager = manager;
             _ea.GetEvent<OfficeAppClosedEvent>().Subscribe(HandleAppClosed);
-            _ea.GetEvent<ExcelAppOpenedEvent>().Subscribe(HandleAppOpened);
-            OpenOfficeProcesses = _detector.FetchOpenOfficeProcesses();
         }
 
-        private void HandleAppOpened(Process p)
+        public List<string> GetOppenAppNames()
         {
-            OpenOfficeProcesses.Add(p);
+            var openAppNames = new List<string>();
+            foreach(var app in _repo.OpenOfficeProcesses)
+            {
+                openAppNames.Add(app.FullName);
+            }
+            return openAppNames;
         }
 
-        private void HandleAppClosed(Process p)
+        private void HandleAppOpened(IOfficeApplication app)
         {
-            OpenOfficeProcesses.Remove(p);
+            _repo.Insert(app);
+            AppOpenedEvent?.Invoke(app, EventArgs.Empty);
+        }
+
+        public void AddOpenOfficeApplicationsToRepo(Func<IEnumerable<IOfficeApplication>> getApps)
+        {
+            foreach(var app in getApps())
+            {
+                _repo.Insert(app);
+            }
+        }
+
+        private void HandleAppClosed(IOfficeApplication app)
+        {
+            _repo.Delete(app);
         }
     }
 }
