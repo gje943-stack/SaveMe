@@ -28,8 +28,8 @@ namespace src.Services
             _ea.GetEvent<OfficeAppClosedEvent>().Subscribe(HandleAppClosed);
             _ea.GetEvent<OfficeAppOpenedEvent>().Subscribe(HandleAppOpened);
             AddOpenOfficeApplicationsToRepo(_manager.FetchOpenExcelProcesses);
-            AddOpenOfficeApplicationsToRepo(_manager.FetchOpenExcelProcesses);
-            AddOpenOfficeApplicationsToRepo(_manager.FetchOpenExcelProcesses);
+            AddOpenOfficeApplicationsToRepo(_manager.FetchOpenWordProcesses);
+            AddOpenOfficeApplicationsToRepo(_manager.FetchOpenPowerPointApplications);
         }
 
         public List<string> GetOpenAppNames()

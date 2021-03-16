@@ -69,7 +69,8 @@ namespace src.Services.Process_Managers
 
         public IEnumerable<IOfficeApplication> FetchOpenExcelProcesses()
         {
-            var app = (Excel.Application)Marshal2.GetActiveObject("Excel.Application");
+            Excel.Application app;
+            app = (Excel.Application)Marshal2.GetActiveObject("Excel.Application");
             foreach (Excel.Workbook wb in app.Workbooks)
             {
                 yield return new ExcelApplication(wb, _ea);

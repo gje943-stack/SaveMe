@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Prism.Events;
 using src.Factories;
 using src.Presenters;
+using src.Repo;
 using src.Services;
 using src.Services.Process_Managers;
 using src.Services.Providers;
@@ -36,6 +37,8 @@ namespace src
                     services.AddTransient<IOfficeAppProvider, OfficeAppProvider>();
                     services.AddSingleton<IMainFormView, MainFormView>();
                     services.AddSingleton<IEventAggregator, EventAggregator>();
+                    services.AddSingleton<IOfficeAppRepo, OfficeAppRepo>();
+                    services.AddSingleton<IProcessWatcher, ProcessWatcher>();
                 })
                 .Build();
 
