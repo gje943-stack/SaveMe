@@ -10,6 +10,7 @@ namespace src.Models
     public class ExcelApplication : IOfficeApplication
     {
         private IEventAggregator _ea;
+
         public ExcelApplication(Workbook Wb, IEventAggregator ea)
         {
             FileDirectory = FileDirectory;
@@ -24,10 +25,13 @@ namespace src.Models
             _ea.GetEvent<OfficeAppClosedEvent>().Publish(this);
         }
 
+        public void Save()
+        {
+            Wb.Save();
+        }
+
         public string FileDirectory { get; set; }
         public string FullName { get; set; }
-        public OfficeAppTypes AppType { get; set; } = OfficeAppTypes.Excel;
-
         public Workbook Wb { get; set; }
     }
 }

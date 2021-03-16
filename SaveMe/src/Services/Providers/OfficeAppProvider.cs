@@ -11,32 +11,43 @@ namespace src.Services.Providers
 {
     public class OfficeAppProvider : IOfficeAppProvider
     {
-        public Excel.Workbook GenerateNewWorkbook(string processName)
+        public Excel.Workbook? GenerateNewWorkbookFromName(string processName)
         {
-            var res = new Excel.Workbook();
             var app = (Excel.Application)Marshal2.GetActiveObject("Excel.Application");
             foreach(Excel.Workbook wb in app.Workbooks)
             {
                 if(wb.Name == processName)
                 {
-                    res = wb;
+                    return wb;
                 }
             }
-            return res;
+            return null;
         }
 
-        public Word.Document GenerateNewDocument(string processName)
+        public Word.Document? GenerateNewDocumentFromName(string processName)
         {
-            var res = new Word.Document();
             var app = (Word.Application)Marshal2.GetActiveObject("Word.Application");
             foreach (Word.Document doc in app.Documents)
             {
                 if (doc.Name == processName)
                 {
-                    res = doc;
+                    return doc;
                 }
             }
-            return res;
+            return null;
+        }
+
+        public PowerPoint.Presentation? GenerateNewPresentationFromName(string processName)
+        {
+            var app = (PowerPoint.Application)Marshal2.GetActiveObject("PowerPoint.Application");
+            foreach(PowerPoint.Presentation pres in app.Presentations)
+            {
+                if(pres.Name == processName)
+                {
+                    return pres;
+                }
+            }
+            return null;
         }
     }
 }

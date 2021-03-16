@@ -4,6 +4,8 @@ using Prism.Events;
 using src.Factories;
 using src.Presenters;
 using src.Services;
+using src.Services.Process_Managers;
+using src.Services.Providers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,8 +32,8 @@ namespace src
                 {
                     services.AddTransient<IPresenter<MainFormView>, MainFormPresenter<MainFormView>>();
                     services.AddTransient<IOfficeAppService, OfficeAppService>();
-                    services.AddTransient<IOfficeProcessManager<ExcelProcessManager>, ExcelProcessManager>();
-                    services.AddTransient<IOfficeApplicationSaver, OfficeApplicationSaver>();
+                    services.AddTransient<IOfficeApplicationManager, OfficeApplicationManager>();
+                    services.AddTransient<IOfficeAppProvider, OfficeAppProvider>();
                     services.AddSingleton<IMainFormView, MainFormView>();
                     services.AddSingleton<IEventAggregator, EventAggregator>();
                 })

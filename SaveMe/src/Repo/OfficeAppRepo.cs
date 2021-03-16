@@ -7,16 +7,16 @@ namespace src.Repo
 {
     public class OfficeAppRepo : IOfficeAppRepo
     {
-        public List<IOfficeApplication> OpenOfficeProcesses { get; private set; } = new();
+        public List<IOfficeApplication> OpenOfficeApps { get; private set; } = new();
 
         public void Insert(IOfficeApplication newApp)
         {
-            OpenOfficeProcesses.Add(newApp);
+            OpenOfficeApps.Add(newApp);
         }
 
         public bool Delete(IOfficeApplication appToDelete)
         {
-            return OpenOfficeProcesses.Remove(appToDelete);
+            return OpenOfficeApps.Remove(appToDelete);
         }
     }
 }

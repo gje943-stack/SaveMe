@@ -1,5 +1,6 @@
 ﻿using Prism.Events;
 using src.Events;
+using src.Models;
 using src.Services;
 using src.Static;
 using System;
@@ -39,17 +40,17 @@ namespace src.Presenters
 
         private void View_Load(object sender, EventArgs e)
         {
-            _service.OpenOfficeProcesses.ForEach(p => View.OpenOfficeAppNames.Add(p.MainWindowTitle));
+            
         }
 
-        private void HandleAppOpened(Process p)
+        private void HandleAppOpened(IOfficeApplication appOpened)
         {
-            View.OpenOfficeAppNames.Add(p.MainWindowTitle);
+            View.OpenOfficeAppNames.Add(appOpened.FullName);
         }
 
-        private void HandleAppClosed(Process p)
+        private void HandleAppClosed(IOfficeApplication appClosed)
         {
-            View.OpenOfficeAppNames.Remove(p.MainWindowTitle);
+            View.OpenOfficeAppNames.Remove(appClosed.FullName);
         }
 
         public void SubscribeToViewEvents()

@@ -6,49 +6,59 @@ using src.Services.Process_Managers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace src.Services
 {
     public class OfficeAppService : IOfficeAppService
     {
-        private readonly IOfficeApplicationSaver _saver;
         private IEventAggregator _ea;
         private readonly IOfficeAppRepo _repo;
-        private readonly IOfficeProcessManager _manager;
+        private readonly IOfficeApplicationManager _manager;
 
-        public event EventHandler AppClosedEvent;
-        public event EventHandler AppOpenedEvent;
-
-        public OfficeAppService(IOfficeApplicationSaver saver,
-            IEventAggregator ea,
-            IOfficeAppRepo repo, IOfficeProcessManager manager)
+        public OfficeAppService(IEventAggregator ea,
+            IOfficeAppRepo repo,
+            IOfficeApplicationManager manager)
         {
-            _saver = saver;
             _repo = repo;
             _manager = manager;
+            _ea = ea;
             _ea.GetEvent<OfficeAppClosedEvent>().Subscribe(HandleAppClosed);
+            _ea.GetEvent<OfficeAppOpenedEvent>().Subscribe(HandleAppOpened);
+            AddOpenOfficeApplicationsToRepo(_manager.FetchOpenExcelProcesses);
+            AddOpenOfficeApplicationsToRepo(_manager.FetchOpenExcelProcesses);
+            AddOpenOfficeApplicationsToRepo(_manager.FetchOpenExcelProcesses);
         }
 
-        public List<string> GetOppenAppNames()
+        public List<string> GetOpenAppNames()
         {
-            var openAppNames = new List<string>();
-            foreach(var app in _repo.OpenOfficeProcesses)
+            return _repo.OpenOfficeApps.Select(app => app.FullName).ToList();
+        }
+
+        public async Task SaveApps(List<string> appsToSave)
+        {
+            await Task.Run(() =>
             {
-                openAppNames.Add(app.FullName);
-            }
-            return openAppNames;
+                foreach (var app in _repo.OpenOfficeApps)
+                {
+                    if (appsToSave.Contains(app.FullName))
+                    {
+                        app.Save();
+                    }
+                }
+            });
         }
 
         private void HandleAppOpened(IOfficeApplication app)
         {
             _repo.Insert(app);
-            AppOpenedEvent?.Invoke(app, EventArgs.Empty);
         }
 
         public void AddOpenOfficeApplicationsToRepo(Func<IEnumerable<IOfficeApplication>> getApps)
         {
-            foreach(var app in getApps())
+            foreach (var app in getApps())
             {
                 _repo.Insert(app);
             }

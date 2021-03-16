@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using src.Models;
+using System;
+using System.Collections.Generic;
 
 namespace src.Services
 {
     public interface IOfficeAppService
     {
-        List<Process> OpenOfficeProcesses { get; }
+        void AddOpenOfficeApplicationsToRepo(Func<IEnumerable<IOfficeApplication>> getApps);
+        List<string> GetOpenAppNames();
     }
 }

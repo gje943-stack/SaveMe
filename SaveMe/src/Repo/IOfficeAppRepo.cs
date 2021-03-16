@@ -5,7 +5,7 @@ namespace src.Repo
 {
     public interface IOfficeAppRepo
     {
-        List<IOfficeApplication> OpenOfficeProcesses { get; }
+        List<IOfficeApplication> OpenOfficeApps { get; }
 
         bool Delete(IOfficeApplication appToDelete);
         void Insert(IOfficeApplication newApp);

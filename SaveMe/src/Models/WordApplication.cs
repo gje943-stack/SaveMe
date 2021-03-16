@@ -24,12 +24,13 @@ namespace src.Models
             _ea.GetEvent<OfficeAppClosedEvent>().Publish(this);
         }
 
+        public void Save()
+        {
+            Doc.Save();
+        }
+
         public string FileDirectory { get; set; }
         public string FullName { get; set; }
-        public OfficeAppTypes AppType { get; set; } = OfficeAppTypes.Word;
-
         public Document Doc { get; set; }
-
-        public event EventHandler AppClosed;
     }
 }

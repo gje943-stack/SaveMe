@@ -9,6 +9,7 @@ namespace src.Models
 {
     public class PowerPointApplication : IOfficeApplication
     {
+        private IEventAggregator _ea;
         public PowerPointApplication(Presentation Pre, IEventAggregator ea)
         {
             FileDirectory = FileDirectory;
@@ -23,12 +24,13 @@ namespace src.Models
             _ea.GetEvent<OfficeAppClosedEvent>().Publish(this);
         }
 
+        public void Save()
+        {
+            Pre.Save();
+        }
+
         public string FileDirectory { get; set; }
         public string FullName { get; set; }
-        public OfficeAppTypes AppType { get; set; } = OfficeAppTypes.PowerPoint;
-
         public Presentation Pre { get; set; }
-
-        public event EventHandler AppClosed;
     }
 }
