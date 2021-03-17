@@ -8,82 +8,77 @@ using Word = Microsoft.Office.Interop.Word;
 using PowerPoint = Microsoft.Office.Interop.PowerPoint;
 using Excel = Microsoft.Office.Interop.Excel;
 using src.Models;
-using src.Services.Providers;
 using src.Events;
 
 namespace src.Services.Process_Managers
 {
     public class OfficeApplicationManager : IOfficeApplicationManager
     {
-        private readonly IProcessWatcher _watcher;
         private IEventAggregator _ea;
-        private readonly IOfficeAppProvider _provider;
+        private Excel.Application xlApp;
+        private Word.Application wordApp;
+        private PowerPoint.Application ppApp;
 
-        public OfficeApplicationManager(IEventAggregator ea, IProcessWatcher watcher, IOfficeAppProvider provider)
+        public OfficeApplicationManager(IEventAggregator ea)
         {
             _ea = ea;
-            _watcher = watcher;
-            _watcher.ProcessStartedEvent += HandleProcessStartedEvent;
-            _provider = provider;
-        }
-
-        private void HandleProcessStartedEvent(object sender, EventArgs e)
-        {
-            var processName = sender as string;
-            var newApp = GetNewApp(processName);
-            if (newApp != null)
-            {
-                _ea.GetEvent<OfficeAppOpenedEvent>().Publish(newApp);
-            }
-        }
-
-        public IOfficeApplication GetNewApp(string processName)
-        {
-            IOfficeApplication? newApp;
-            if (processName.Contains("Excel"))
-            {
-                var workbook = _provider.GenerateNewWorkbookFromName(processName);
-                newApp = new ExcelApplication(workbook, _ea);
-            }
-            else if (processName.Contains("Word"))
-            {
-                var doc = _provider.GenerateNewDocumentFromName(processName);
-                newApp = new WordApplication(doc, _ea);
-            }
-            else
-            {
-                var presentation = _provider.GenerateNewPresentationFromName(processName);
-                newApp = new PowerPointApplication(presentation, _ea);
-            }
-            return newApp;
         }
 
         public IEnumerable<IOfficeApplication> FetchOpenWordProcesses()
         {
-            var app = (Word.Application)Marshal2.GetActiveObject("Word.Application");
-            foreach (Word.Document doc in app.Documents)
+            wordApp = (Word.Application)Marshal2.GetActiveObject("Word.Application");
+            if (wordApp != null)
             {
-                yield return new WordApplication(doc, _ea);
+                wordApp.DocumentOpen += WordApp_DocumentOpen;
+                foreach (Word.Document doc in wordApp.Documents)
+                {
+                    yield return new WordApplication(doc, _ea);
+                }
             }
         }
 
         public IEnumerable<IOfficeApplication> FetchOpenExcelProcesses()
         {
-            Excel.Application app;
-            app = (Excel.Application)Marshal2.GetActiveObject("Excel.Application");
-            foreach (Excel.Workbook wb in app.Workbooks)
+            xlApp = (Excel.Application)Marshal2.GetActiveObject("Excel.Application");
+            if (xlApp != null)
             {
-                yield return new ExcelApplication(wb, _ea);
+                xlApp.WorkbookOpen += XlApp_WorkbookOpen;
+                foreach (Excel.Workbook wb in xlApp.Workbooks)
+                {
+                    yield return new ExcelApplication(wb, _ea);
+                }
             }
         }
 
         public IEnumerable<IOfficeApplication> FetchOpenPowerPointApplications()
         {
-            var app = (PowerPoint.Application)Marshal2.GetActiveObject("PowerPoint.Application");
-            foreach (PowerPoint.Presentation p in app.Presentations)
+            ppApp = (PowerPoint.Application)Marshal2.GetActiveObject("PowerPoint.Application");
+            if (ppApp != null)
             {
-                yield return new PowerPointApplication(p, _ea);
+                ppApp.PresentationOpen += PpApp_PresentationOpen;
+                foreach (PowerPoint.Presentation p in ppApp.Presentations)
+                {
+                    yield return new PowerPointApplication(p, _ea);
+                }
             }
+        }
+
+        private void WordApp_DocumentOpen(Word.Document Doc)
+        {
+            var app = new WordApplication(Doc, _ea);
+            _ea.GetEvent<OfficeAppOpenedEvent>().Publish(app);
+        }
+
+        private void PpApp_PresentationOpen(PowerPoint.Presentation Pres)
+        {
+            var app = new PowerPointApplication(Pres, _ea);
+            _ea.GetEvent<OfficeAppOpenedEvent>().Publish(app);
+        }
+
+        private void XlApp_WorkbookOpen(Excel.Workbook Wb)
+        {
+            var app = new ExcelApplication(Wb, _ea);
+            _ea.GetEvent<OfficeAppOpenedEvent>().Publish(app);
         }
     }
 }

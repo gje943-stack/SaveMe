@@ -10,12 +10,13 @@ namespace src.Models
     public class WordApplication : IOfficeApplication
     {
         private IEventAggregator _ea;
-        public WordApplication(Document Doc, IEventAggregator ea)
+
+        public WordApplication(Document Doc, IEventAggregator _ea)
         {
             this.Doc = Doc;
+            FullName = $"{AppType} - {Doc.FullName}";
             FileDirectory = Doc.Path;
-            FullName = Doc.FullName;
-            _ea = ea;
+            this._ea = _ea;
             Doc.Application.WindowDeactivate += Application_WindowDeactivate;
         }
 
@@ -32,5 +33,7 @@ namespace src.Models
         public string FileDirectory { get; set; }
         public string FullName { get; set; }
         public Document Doc { get; set; }
+
+        public OfficeAppType AppType { get; private set; } = OfficeAppType.Word;
     }
 }

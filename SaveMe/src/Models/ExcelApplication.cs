@@ -13,8 +13,8 @@ namespace src.Models
 
         public ExcelApplication(Workbook Wb, IEventAggregator ea)
         {
-            FileDirectory = FileDirectory;
-            FullName = FullName;
+            FileDirectory = Wb.Path;
+            FullName = $"{AppType} - {Wb.FullName}";
             this.Wb = Wb;
             Wb.Application.WindowDeactivate += Application_WindowDeactivate; ;
             _ea = ea;
@@ -33,5 +33,7 @@ namespace src.Models
         public string FileDirectory { get; set; }
         public string FullName { get; set; }
         public Workbook Wb { get; set; }
+
+        public OfficeAppType AppType { get; private set; } = OfficeAppType.Excel;
     }
 }

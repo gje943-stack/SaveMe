@@ -33,14 +33,18 @@ namespace src.Presenters
 
         public void InitialSetup()
         {
-            _ea.GetEvent<OfficeAppClosedEvent>().Subscribe(HandleAppClosed);
-            _ea.GetEvent<OfficeAppOpenedEvent>().Subscribe(HandleAppOpened);
             View.Load += View_Load;
         }
 
         private void View_Load(object sender, EventArgs e)
         {
-            
+            foreach (var appName in _service.GetOpenAppNames())
+            {
+                View.OpenOfficeAppNames.Add(appName);
+            }
+            _ea.GetEvent<OfficeAppClosedEvent>().Subscribe(HandleAppClosed);
+            _ea.GetEvent<OfficeAppOpenedEvent>().Subscribe(HandleAppOpened);
+            Console.ReadLine();
         }
 
         private void HandleAppOpened(IOfficeApplication appOpened)
