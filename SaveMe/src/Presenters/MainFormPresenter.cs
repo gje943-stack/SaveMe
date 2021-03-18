@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Windows.Forms;
 
 namespace src.Presenters
 {
@@ -20,15 +21,33 @@ namespace src.Presenters
     public class MainFormPresenter<TView> : IPresenter<TView> where TView : IMainFormView
     {
         public TView View { get; set; }
-        public Timer Timer { get; private set; }
+        public System.Threading.Timer Timer { get; private set; }
         public int CurrentAutoSaveFrequency { get; private set; }
         private readonly IOfficeAppService _service;
-        private IEventAggregator _ea;
 
-        public MainFormPresenter(IOfficeAppService service, IEventAggregator ea)
+        public MainFormPresenter(IOfficeAppService service)
         {
             _service = service;
-            _ea = ea;
+            _service.NewAppStartedEvent += _service_NewAppStartedEvent;
+            _service.AppClosedEvent += _service_AppClosedEvent;
+        }
+
+        private void _service_AppClosedEvent(object sender, EventArgs e)
+        {
+            var closedApp = sender as IOfficeApplication;
+            View.Invoke(new MethodInvoker(delegate ()
+            {
+                View.ListOfOpenOfficeApplications.Items.Remove(closedApp.FullName);
+            }));
+        }
+
+        private void _service_NewAppStartedEvent(object sender, EventArgs e)
+        {
+            var newApp = sender as IOfficeApplication;
+            View.Invoke(new MethodInvoker(delegate ()
+            {
+                View.ListOfOpenOfficeApplications.Items.Add(newApp.FullName);
+            }));
         }
 
         public void InitialSetup()
@@ -38,23 +57,18 @@ namespace src.Presenters
 
         private void View_Load(object sender, EventArgs e)
         {
+            PopulateOpenAppNames();
+        }
+
+        private void PopulateOpenAppNames()
+        {
             foreach (var appName in _service.GetOpenAppNames())
             {
-                View.OpenOfficeAppNames.Add(appName);
+                View.Invoke(new MethodInvoker(delegate()
+                {
+                    View.ListOfOpenOfficeApplications.Items.Add(appName);
+                }));
             }
-            _ea.GetEvent<OfficeAppClosedEvent>().Subscribe(HandleAppClosed);
-            _ea.GetEvent<OfficeAppOpenedEvent>().Subscribe(HandleAppOpened);
-            Console.ReadLine();
-        }
-
-        private void HandleAppOpened(IOfficeApplication appOpened)
-        {
-            View.OpenOfficeAppNames.Add(appOpened.FullName);
-        }
-
-        private void HandleAppClosed(IOfficeApplication appClosed)
-        {
-            View.OpenOfficeAppNames.Remove(appClosed.FullName);
         }
 
         public void SubscribeToViewEvents()

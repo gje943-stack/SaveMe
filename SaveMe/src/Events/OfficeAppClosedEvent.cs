@@ -7,5 +7,8 @@ using System.Text;
 
 namespace src.Events
 {
-    public class OfficeAppClosedEvent : PubSubEvent<IOfficeApplication> { }
+    public class OfficeAppClosedEvent : EventArgs
+    {
+
+    }
 }

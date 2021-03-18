@@ -13,5 +13,7 @@ namespace src.Models
         public OfficeAppType AppType { get; }
 
         void Save();
+
+        event EventHandler AppClosed;
     }
 }

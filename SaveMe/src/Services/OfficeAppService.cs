@@ -8,40 +8,77 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace src.Services
 {
     public class OfficeAppService : IOfficeAppService
     {
-        private IEventAggregator _ea;
-        private readonly IOfficeAppRepo _repo;
-        private readonly IOfficeApplicationManager _manager;
+        private readonly IOfficeApplicationProvider _provider;
+        private readonly IProcessWatcher _watcher;
+        public event EventHandler NewAppStartedEvent;
+        public event EventHandler AppClosedEvent;
+        public List<IOfficeApplication> OpenOfficeApps { get; set; } = new();
 
-        public OfficeAppService(IEventAggregator ea,
-            IOfficeAppRepo repo,
-            IOfficeApplicationManager manager)
+        public OfficeAppService(IOfficeApplicationProvider provider, IProcessWatcher watcher)
         {
-            _repo = repo;
-            _manager = manager;
-            _ea = ea;
-            _ea.GetEvent<OfficeAppClosedEvent>().Subscribe(HandleAppClosed);
-            _ea.GetEvent<OfficeAppOpenedEvent>().Subscribe(HandleAppOpened);
-            AddOpenOfficeApplicationsToRepo(_manager.FetchOpenExcelProcesses);
-            AddOpenOfficeApplicationsToRepo(_manager.FetchOpenWordProcesses);
-            AddOpenOfficeApplicationsToRepo(_manager.FetchOpenPowerPointApplications);
+            _provider = provider;
+            _watcher = watcher;
+            _watcher.AppStartedEvent += _watcher_AppStartedEvent;
+            SetOpenOfficeApplications(_provider.FetchOpenWordApplications);
+            SetOpenOfficeApplications(_provider.FetchOpenPowerPointApplications);
+            SetOpenOfficeApplications(_provider.FetchOpenExcelApplications);
+        }
+
+        private void _watcher_AppStartedEvent(object sender, OfficeAppOpenedEventArgs e)
+        {
+            switch (e.AppType)
+            {
+                case OfficeAppType.Excel:
+                    PublishNewAppStartedEvent(_provider.FetchOpenExcelApplications);
+                    break;
+                case OfficeAppType.PowerPoint:
+                    PublishNewAppStartedEvent(_provider.FetchOpenPowerPointApplications);
+                    break;
+                case OfficeAppType.Word:
+                    PublishNewAppStartedEvent(_provider.FetchOpenWordApplications);
+                    break;
+            }
+        }
+
+        private void PublishNewAppStartedEvent(Func<IEnumerable<IOfficeApplication>> getApps)
+        {
+            var newApp = GetNewOfficeApplication(getApps);
+            NewAppStartedEvent?.Invoke(newApp, EventArgs.Empty);
+        }
+
+        private IOfficeApplication GetNewOfficeApplication(Func<IEnumerable<IOfficeApplication>> getApps)
+        {
+            while (true)
+            {
+                foreach (var app in getApps())
+                {
+                    if (!OpenOfficeApps.Contains(app))
+                    {
+                        OpenOfficeApps.Add(app);
+                        return app;
+                    }
+                }
+            }
         }
 
         public List<string> GetOpenAppNames()
         {
-            return _repo.OpenOfficeApps.Select(app => app.FullName).ToList();
+            return OpenOfficeApps.Select(app => app.FullName).ToList();
         }
+
 
         public async Task SaveApps(List<string> appsToSave)
         {
             await Task.Run(() =>
             {
-                foreach (var app in _repo.OpenOfficeApps)
+                foreach (var app in OpenOfficeApps)
                 {
                     if (appsToSave.Contains(app.FullName))
                     {
@@ -51,22 +88,22 @@ namespace src.Services
             });
         }
 
-        private void HandleAppOpened(IOfficeApplication app)
-        {
-            _repo.Insert(app);
-        }
-
-        public void AddOpenOfficeApplicationsToRepo(Func<IEnumerable<IOfficeApplication>> getApps)
+        public void SetOpenOfficeApplications(Func<IEnumerable<IOfficeApplication>> getApps)
         {
             foreach (var app in getApps())
             {
-                _repo.Insert(app);
+                if (!OpenOfficeApps.Contains(app))
+                {
+                    app.AppClosed += HandleAppClosed;
+                    OpenOfficeApps.Add(app);
+                }
             }
         }
 
-        private void HandleAppClosed(IOfficeApplication app)
+        private void HandleAppClosed(object sender, EventArgs e)
         {
-            _repo.Delete(app);
+            OpenOfficeApps.Remove(sender as IOfficeApplication);
+            AppClosedEvent?.Invoke(sender as IOfficeApplication, EventArgs.Empty);
         }
     }
 }

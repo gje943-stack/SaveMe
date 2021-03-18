@@ -9,20 +9,20 @@ namespace src.Models
 {
     public class WordApplication : IOfficeApplication
     {
-        private IEventAggregator _ea;
 
-        public WordApplication(Document Doc, IEventAggregator _ea)
+        public WordApplication(Document Doc)
         {
             this.Doc = Doc;
             FullName = $"{AppType} - {Doc.FullName}";
             FileDirectory = Doc.Path;
-            this._ea = _ea;
             Doc.Application.WindowDeactivate += Application_WindowDeactivate;
         }
 
+        public event EventHandler AppClosed;
+
         private void Application_WindowDeactivate(Document Doc, Window Wn)
         {
-            _ea.GetEvent<OfficeAppClosedEvent>().Publish(this);
+            AppClosed?.Invoke(this, EventArgs.Empty);
         }
 
         public void Save()
