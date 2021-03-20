@@ -1,15 +1,13 @@
-﻿using Prism.Events;
-using src.Events;
+﻿using src.Events;
 using src.Models;
-using src.Repo;
 using src.Services.Process_Managers;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
+using Word = Microsoft.Office.Interop.Word;
+using PowerPoint = Microsoft.Office.Interop.PowerPoint;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace src.Services
 {
@@ -21,14 +19,15 @@ namespace src.Services
         public event EventHandler AppClosedEvent;
         public List<IOfficeApplication> OpenOfficeApps { get; set; } = new();
 
+
         public OfficeAppService(IOfficeApplicationProvider provider, IProcessWatcher watcher)
         {
             _provider = provider;
             _watcher = watcher;
             _watcher.AppStartedEvent += _watcher_AppStartedEvent;
-            SetOpenOfficeApplications(_provider.FetchOpenWordApplications);
-            SetOpenOfficeApplications(_provider.FetchOpenPowerPointApplications);
-            SetOpenOfficeApplications(_provider.FetchOpenExcelApplications);
+            AddOpenPowerPointApps();
+            AddOpenExcelApps();
+            AddOpenWordApps();
         }
 
         private void _watcher_AppStartedEvent(object sender, OfficeAppOpenedEventArgs e)
@@ -36,33 +35,61 @@ namespace src.Services
             switch (e.AppType)
             {
                 case OfficeAppType.Excel:
-                    PublishNewAppStartedEvent(_provider.FetchOpenExcelApplications);
+                    AddOpenExcelApps();
                     break;
                 case OfficeAppType.PowerPoint:
-                    PublishNewAppStartedEvent(_provider.FetchOpenPowerPointApplications);
+                    AddOpenPowerPointApps();
                     break;
                 case OfficeAppType.Word:
-                    PublishNewAppStartedEvent(_provider.FetchOpenWordApplications);
+                    AddOpenWordApps();
                     break;
             }
+            NewAppStartedEvent?.Invoke(this, EventArgs.Empty);
         }
 
-        private void PublishNewAppStartedEvent(Func<IEnumerable<IOfficeApplication>> getApps)
-        {
-            var newApp = GetNewOfficeApplication(getApps);
-            NewAppStartedEvent?.Invoke(newApp, EventArgs.Empty);
-        }
-
-        private IOfficeApplication GetNewOfficeApplication(Func<IEnumerable<IOfficeApplication>> getApps)
+        private void AddOpenWordApps()
         {
             while (true)
             {
-                foreach (var app in getApps())
+                foreach (var doc in _provider.FetchOpenWordApplications())
                 {
-                    if (!OpenOfficeApps.Contains(app))
+                    if (!AppAlreadyCreated(doc.FullName))
                     {
-                        OpenOfficeApps.Add(app);
-                        return app;
+                        var newApp = new WordApplication(doc);
+                        newApp.AppClosed += HandleAppClosed;
+                        OpenOfficeApps.Add(newApp);
+                    }
+                }
+            }
+        }
+
+        private void AddOpenExcelApps()
+        {
+            while (true)
+            {
+                foreach (var wb in _provider.FetchOpenExcelApplications())
+                {
+                    if (!AppAlreadyCreated(wb.FullName))
+                    {
+                        var newApp = new ExcelApplication(wb);
+                        newApp.AppClosed += HandleAppClosed;
+                        OpenOfficeApps.Add(newApp);
+                    }
+                }
+            }
+        }
+
+        private void AddOpenPowerPointApps()
+        {
+            while (true)
+            {
+                foreach (var pres in _provider.FetchOpenPowerPointApplications())
+                {
+                    if (!AppAlreadyCreated(pres.FullName))
+                    {
+                        var newApp = new PowerPointApplication(pres);
+                        newApp.AppClosed += HandleAppClosed;
+                        OpenOfficeApps.Add(newApp);
                     }
                 }
             }
@@ -70,40 +97,30 @@ namespace src.Services
 
         public List<string> GetOpenAppNames()
         {
-            return OpenOfficeApps.Select(app => app.FullName).ToList();
+            return OpenOfficeApps.Select(app => $"{app.AppType} - {app.FullName}").ToList();
         }
 
 
-        public async Task SaveApps(List<string> appsToSave)
+        public async Task SaveApps()
         {
             await Task.Run(() =>
             {
                 foreach (var app in OpenOfficeApps)
                 {
-                    if (appsToSave.Contains(app.FullName))
-                    {
-                        app.Save();
-                    }
+                    app.Save();
                 }
             });
-        }
-
-        public void SetOpenOfficeApplications(Func<IEnumerable<IOfficeApplication>> getApps)
-        {
-            foreach (var app in getApps())
-            {
-                if (!OpenOfficeApps.Contains(app))
-                {
-                    app.AppClosed += HandleAppClosed;
-                    OpenOfficeApps.Add(app);
-                }
-            }
         }
 
         private void HandleAppClosed(object sender, EventArgs e)
         {
             OpenOfficeApps.Remove(sender as IOfficeApplication);
             AppClosedEvent?.Invoke(sender as IOfficeApplication, EventArgs.Empty);
+        }
+
+        private bool AppAlreadyCreated(string appName)
+        {
+            return OpenOfficeApps.Select(app => app.FullName).ToList().Contains(appName);
         }
     }
 }

@@ -46,7 +46,13 @@ namespace src.Presenters
             var newApp = sender as IOfficeApplication;
             View.Invoke(new MethodInvoker(delegate ()
             {
-                View.ListOfOpenOfficeApplications.Items.Add(newApp.FullName);
+                foreach(var app in _service.OpenOfficeApps)
+                {
+                    if (!View.ListOfOpenOfficeApplications.Items.Contains(app.FullName))
+                    {
+                        View.ListOfOpenOfficeApplications.Items.Add(newApp.FullName);
+                    }
+                }
             }));
         }
 

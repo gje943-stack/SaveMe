@@ -16,7 +16,7 @@ namespace src.Models
         public ExcelApplication(Workbook Wb)
         {
             FileDirectory = Wb.Path;
-            FullName = $"{AppType} - {Wb.FullName}";
+            FullName = Wb.FullName;
             this.Wb = Wb;
             Wb.Application.WindowDeactivate += Application_WindowDeactivate; ;
         }

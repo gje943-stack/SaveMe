@@ -14,7 +14,7 @@ namespace src.Models
         public PowerPointApplication(Presentation Pre)
         {
             FileDirectory = Pre.Path;
-            FullName = $"{AppType} - {Pre.FullName}";
+            FullName = Pre.FullName;
             this.Pre = Pre;
             Pre.Application.WindowDeactivate += Application_WindowDeactivate;
         }

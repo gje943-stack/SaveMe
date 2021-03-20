@@ -13,7 +13,7 @@ namespace src.Models
         public WordApplication(Document Doc)
         {
             this.Doc = Doc;
-            FullName = $"{AppType} - {Doc.FullName}";
+            FullName = Doc.FullName;
             FileDirectory = Doc.Path;
             Doc.Application.WindowDeactivate += Application_WindowDeactivate;
         }
