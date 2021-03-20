@@ -9,19 +9,22 @@ namespace src.Models
 {
     public class PowerPointApplication : IOfficeApplication
     {
-        private IEventAggregator _ea;
-        public PowerPointApplication(Presentation Pre, IEventAggregator ea)
+        public event EventHandler AppClosed;
+
+        public PowerPointApplication(Presentation Pre)
         {
-            FileDirectory = FileDirectory;
-            FullName = FullName;
+            FileDirectory = Pre.Path;
+            FullName = Pre.FullName;
             this.Pre = Pre;
-            _ea = ea;
             Pre.Application.WindowDeactivate += Application_WindowDeactivate;
         }
 
         private void Application_WindowDeactivate(Presentation Pres, DocumentWindow Wn)
         {
-            _ea.GetEvent<OfficeAppClosedEvent>().Publish(this);
+            if(Pres.FullName == Pre.FullName || Pre == null)
+            {
+                AppClosed?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         public void Save()
@@ -32,5 +35,6 @@ namespace src.Models
         public string FileDirectory { get; set; }
         public string FullName { get; set; }
         public Presentation Pre { get; set; }
+        public OfficeAppType AppType { get; private set; } = OfficeAppType.PowerPoint;
     }
 }

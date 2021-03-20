@@ -10,6 +10,10 @@ namespace src.Models
 
         public string FullName { get; set; }
 
+        public OfficeAppType AppType { get; }
+
         void Save();
+
+        event EventHandler AppClosed;
     }
 }

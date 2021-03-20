@@ -6,7 +6,6 @@ using src.Presenters;
 using src.Repo;
 using src.Services;
 using src.Services.Process_Managers;
-using src.Services.Providers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,10 +32,8 @@ namespace src
                 {
                     services.AddTransient<IPresenter<MainFormView>, MainFormPresenter<MainFormView>>();
                     services.AddTransient<IOfficeAppService, OfficeAppService>();
-                    services.AddTransient<IOfficeApplicationManager, OfficeApplicationManager>();
-                    services.AddTransient<IOfficeAppProvider, OfficeAppProvider>();
+                    services.AddTransient<IOfficeApplicationProvider, OfficeApplicationProvider>();
                     services.AddSingleton<IMainFormView, MainFormView>();
-                    services.AddSingleton<IEventAggregator, EventAggregator>();
                     services.AddSingleton<IOfficeAppRepo, OfficeAppRepo>();
                     services.AddSingleton<IProcessWatcher, ProcessWatcher>();
                 })

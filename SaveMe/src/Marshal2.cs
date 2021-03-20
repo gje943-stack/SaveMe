@@ -7,8 +7,8 @@ using System.Text;
 
 namespace src
 {
-    public class Marshal2 
-    { 
+    public class Marshal2
+    {
         internal const String OLEAUT32 = "oleaut32.dll";
         internal const String OLE32 = "ole32.dll";
 
@@ -30,8 +30,15 @@ namespace src
                 CLSIDFromProgID(progID, out clsid);
             }
 
-            GetActiveObject(ref clsid, IntPtr.Zero, out obj);
-            return obj;
+            try
+            {
+                GetActiveObject(ref clsid, IntPtr.Zero, out obj);
+                return obj;
+            }
+            catch (Exception)
+            {
+                return obj;
+            }
         }
 
         //[DllImport(Microsoft.Win32.Win32Native.OLE32, PreserveSig = false)]

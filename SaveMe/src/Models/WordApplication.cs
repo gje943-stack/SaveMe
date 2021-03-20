@@ -9,19 +9,20 @@ namespace src.Models
 {
     public class WordApplication : IOfficeApplication
     {
-        private IEventAggregator _ea;
-        public WordApplication(Document Doc, IEventAggregator ea)
+
+        public WordApplication(Document Doc)
         {
             this.Doc = Doc;
-            FileDirectory = Doc.Path;
             FullName = Doc.FullName;
-            _ea = ea;
+            FileDirectory = Doc.Path;
             Doc.Application.WindowDeactivate += Application_WindowDeactivate;
         }
 
+        public event EventHandler AppClosed;
+
         private void Application_WindowDeactivate(Document Doc, Window Wn)
         {
-            _ea.GetEvent<OfficeAppClosedEvent>().Publish(this);
+            AppClosed?.Invoke(this, EventArgs.Empty);
         }
 
         public void Save()
@@ -32,5 +33,7 @@ namespace src.Models
         public string FileDirectory { get; set; }
         public string FullName { get; set; }
         public Document Doc { get; set; }
+
+        public OfficeAppType AppType { get; private set; } = OfficeAppType.Word;
     }
 }

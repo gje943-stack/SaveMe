@@ -11,18 +11,19 @@ namespace src.Models
     {
         private IEventAggregator _ea;
 
-        public ExcelApplication(Workbook Wb, IEventAggregator ea)
+        public event EventHandler AppClosed;
+
+        public ExcelApplication(Workbook Wb)
         {
-            FileDirectory = FileDirectory;
-            FullName = FullName;
+            FileDirectory = Wb.Path;
+            FullName = Wb.FullName;
             this.Wb = Wb;
             Wb.Application.WindowDeactivate += Application_WindowDeactivate; ;
-            _ea = ea;
         }
 
         private void Application_WindowDeactivate(Workbook Wb, Window Wn)
         {
-            _ea.GetEvent<OfficeAppClosedEvent>().Publish(this);
+            AppClosed?.Invoke(this, EventArgs.Empty);
         }
 
         public void Save()
@@ -33,5 +34,7 @@ namespace src.Models
         public string FileDirectory { get; set; }
         public string FullName { get; set; }
         public Workbook Wb { get; set; }
+
+        public OfficeAppType AppType { get; private set; } = OfficeAppType.Excel;
     }
 }

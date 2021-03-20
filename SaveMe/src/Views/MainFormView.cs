@@ -17,13 +17,13 @@ namespace src
     public partial class MainFormView : Form, IMainFormView
     {
         public event EventHandler AutoSaveFrequencySelected;
-        public BindingList<string> OpenOfficeAppNames { get; set; } = new();
+        //public BindingList<string> OpenOfficeAppNames { get; set; } = new();
 
         public MainFormView()
         {
             InitializeComponent();
             InitializePresenter();
-            listAllApplications.DataSource = OpenOfficeAppNames;
+            //listAllApplications.DataSource = OpenOfficeAppNames;
         }
 
         public void InitializePresenter()
