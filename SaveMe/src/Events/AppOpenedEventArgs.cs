@@ -7,11 +7,11 @@ using System.Text;
 
 namespace src.Events
 {
-    public class OfficeAppOpenedEventArgs : EventArgs
+    public class AppOpenedEventArgs : EventArgs
     {
         public OfficeAppType AppType { get; set; }
 
-        public OfficeAppOpenedEventArgs(OfficeAppType appType)
+        public AppOpenedEventArgs(OfficeAppType appType)
         {
             AppType = appType;
         }

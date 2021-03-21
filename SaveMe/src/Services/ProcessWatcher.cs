@@ -9,14 +9,14 @@ using System.Management;
 using System.Text;
 using System.Threading;
 
-namespace src.Services.Process_Managers
+namespace src.Services
 {
     public class ProcessWatcher : IProcessWatcher
     {
         private readonly ManagementEventWatcher _processStartEvent = new("SELECT * FROM Win32_ProcessStartTrace");
         private Dictionary<string, Action> NewProcessEvents { get; set; }
 
-        public event EventHandler<OfficeAppOpenedEventArgs> AppStartedEvent;
+        public event EventHandler<NewProcessEventArgs> NewProcessEvent;
 
         public ProcessWatcher()
         {
@@ -24,9 +24,9 @@ namespace src.Services.Process_Managers
             _processStartEvent.Start();
             NewProcessEvents = new()
             {
-                { "EXCEL", () => AppStartedEvent?.Invoke(this, new OfficeAppOpenedEventArgs(OfficeAppType.Excel)) },
-                { "POWERPNT", () => AppStartedEvent?.Invoke(this, new OfficeAppOpenedEventArgs(OfficeAppType.PowerPoint)) },
-                { "WORD", () => AppStartedEvent?.Invoke(this, new OfficeAppOpenedEventArgs(OfficeAppType.Word)) }
+                { "EXCEL", () => NewProcessEvent?.Invoke(this, new NewProcessEventArgs(OfficeAppType.Excel)) },
+                { "POWERPNT", () => NewProcessEvent?.Invoke(this, new NewProcessEventArgs(OfficeAppType.PowerPoint)) },
+                { "WORD", () => NewProcessEvent?.Invoke(this, new NewProcessEventArgs(OfficeAppType.Word)) }
             };
         }
 

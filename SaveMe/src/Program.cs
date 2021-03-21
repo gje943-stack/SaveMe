@@ -1,16 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Prism.Events;
 using src.Factories;
 using src.Presenters;
-using src.Repo;
 using src.Services;
-using src.Services.Process_Managers;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace src
@@ -31,10 +24,8 @@ namespace src
                 .ConfigureServices((services) =>
                 {
                     services.AddTransient<IPresenter<MainFormView>, MainFormPresenter<MainFormView>>();
-                    services.AddTransient<IOfficeAppService, OfficeAppService>();
-                    services.AddTransient<IOfficeApplicationProvider, OfficeApplicationProvider>();
+                    services.AddTransient<IOfficeAppProvider, OfficeAppProvider>();
                     services.AddSingleton<IMainFormView, MainFormView>();
-                    services.AddSingleton<IOfficeAppRepo, OfficeAppRepo>();
                     services.AddSingleton<IProcessWatcher, ProcessWatcher>();
                 })
                 .Build();

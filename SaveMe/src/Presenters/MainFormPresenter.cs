@@ -23,36 +23,65 @@ namespace src.Presenters
         public TView View { get; set; }
         public System.Threading.Timer Timer { get; private set; }
         public int CurrentAutoSaveFrequency { get; private set; }
-        private readonly IOfficeAppService _service;
+        private List<IOfficeApp> OpenApps { get; set; } = new();
 
-        public MainFormPresenter(IOfficeAppService service)
+        private readonly IOfficeAppProvider _provider;
+
+        public MainFormPresenter(IOfficeAppProvider provider)
         {
-            _service = service;
-            _service.NewAppStartedEvent += _service_NewAppStartedEvent;
-            _service.AppClosedEvent += _service_AppClosedEvent;
+            _provider = provider;
+            _provider.AppClosedEvent += HandleAppClosed;
+            _provider.AppOpenedEvent += HandleAppOpened;
         }
 
-        private void _service_AppClosedEvent(object sender, EventArgs e)
+        private void HandleAppOpened(object sender, AppOpenedEventArgs e)
         {
-            var closedApp = sender as IOfficeApplication;
+            var openAppNames = OpenApps.Select(app => app.Name).ToList();
+
+            switch (e.AppType)
+            {
+                case OfficeAppType.Excel:
+                    AddNewApps(_provider.FetchNewExcelApplications, openAppNames);
+                    break;
+
+                case OfficeAppType.Word:
+                    AddNewApps(_provider.FetchNewWordApplications, openAppNames);
+                    break;
+
+                case OfficeAppType.PowerPoint:
+                    AddNewApps(_provider.FetchNewPowerPointApplications, openAppNames);
+                    break;
+            };
+        }
+
+        private void HandleAppClosed(object sender, AppClosedEventArgs e)
+        {
+            OpenApps.RemoveAll(app => app.Name == e.Name);
+            RemoveItemFromViewListBox($"{e.Type} - {e.Name}");
+        }
+
+        public void AddNewApps(Func<List<string>, IEnumerable<IOfficeApp>> getApps, List<string> openAppNames)
+        {
+            foreach (var app in getApps(openAppNames))
+            {
+                OpenApps.Add(app);
+                AddNewAppToViewListBox($"{app.Type} - {app.Name}");
+            }
+        }
+
+        private void AddNewAppToViewListBox(string newApp)
+        {
             View.Invoke(new MethodInvoker(delegate ()
             {
-                View.ListOfOpenOfficeApplications.Items.Remove(closedApp.FullName);
+                View.ListOfOpenOfficeApplications.Items.Add(newApp);
             }));
         }
 
-        private void _service_NewAppStartedEvent(object sender, EventArgs e)
+        private void RemoveItemFromViewListBox(string closedApp)
         {
-            var newApp = sender as IOfficeApplication;
             View.Invoke(new MethodInvoker(delegate ()
             {
-                foreach(var app in _service.OpenOfficeApps)
-                {
-                    if (!View.ListOfOpenOfficeApplications.Items.Contains(app.FullName))
-                    {
-                        View.ListOfOpenOfficeApplications.Items.Add(newApp.FullName);
-                    }
-                }
+                View.ListOfOpenOfficeApplications.Items.Remove($"{closedApp}");
             }));
         }
 
@@ -63,18 +92,10 @@ namespace src.Presenters
 
         private void View_Load(object sender, EventArgs e)
         {
-            PopulateOpenAppNames();
-        }
-
-        private void PopulateOpenAppNames()
-        {
-            foreach (var appName in _service.GetOpenAppNames())
-            {
-                View.Invoke(new MethodInvoker(delegate()
-                {
-                    View.ListOfOpenOfficeApplications.Items.Add(appName);
-                }));
-            }
+            var openAppNames = OpenApps.Select(app => app.Name).ToList();
+            AddNewApps(_provider.FetchNewExcelApplications, openAppNames);
+            AddNewApps(_provider.FetchNewWordApplications, openAppNames);
+            AddNewApps(_provider.FetchNewWordApplications, openAppNames);
         }
 
         public void SubscribeToViewEvents()
