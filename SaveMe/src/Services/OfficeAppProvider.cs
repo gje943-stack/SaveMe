@@ -17,6 +17,10 @@ namespace src.Services
 
         public IProcessWatcher _watcher;
 
+        private Word.Application? wordApp = (Word.Application)Marshal2.GetActiveObject("Word.Application");
+        private Excel.Application? xlApp = (Excel.Application)Marshal2.GetActiveObject("Excel.Application");
+        private PowerPoint.Application? ppApp = (PowerPoint.Application)Marshal2.GetActiveObject("PowerPoint.Application");
+
         public OfficeAppProvider(IProcessWatcher watcher)
         {
             _watcher = watcher;
@@ -28,55 +32,78 @@ namespace src.Services
             AppOpenedEvent?.Invoke(this, new AppOpenedEventArgs(e.ProcessType));
         }
 
-        public IEnumerable<IOfficeApp> FetchNewWordApplications(List<string> openApps)
+        public IEnumerable<IOfficeApp> TryFetchWordApplicationsOnStartup()
         {
-            var wordApp = (Word.Application)Marshal2.GetActiveObject("Word.Application");
-            if (wordApp != null)
+            if (wordApp != null && wordApp.Documents.Count > 0)
             {
                 RegisterWordAppClosedEvent(wordApp);
                 foreach (Word.Document doc in wordApp.Documents)
                 {
-                    if (!openApps.Contains(doc.FullName))
-                    {
-                        yield return new OfficeApp(OfficeAppType.Word, doc.FullName);
-                    }
+                    yield return new OfficeApp(OfficeAppType.Word, doc.FullName);
                 }
             }
         }
 
-        public IEnumerable<IOfficeApp> FetchNewExcelApplications(List<string> openApps)
+        public IEnumerable<IOfficeApp> TryFetchExcelApplicationsOnStartup()
         {
-            var xlApp = (Excel.Application)Marshal2.GetActiveObject("Excel.Application");
-            if (xlApp != null)
+            if (xlApp != null && xlApp.Workbooks.Count > 0)
             {
-                while (xlApp.Workbooks.Count == openApps.Count)
-                {
-                    xlApp = (Excel.Application)Marshal2.GetActiveObject("Excel.Application");
-                    Thread.Sleep(10);
-                };
                 RegisterExcelAppClosedEvent(xlApp);
                 foreach (Excel.Workbook wb in xlApp.Workbooks)
                 {
-                    if (!openApps.Contains(wb.FullName))
-                    {
-                        yield return new OfficeApp(OfficeAppType.Excel, wb.FullName);
-                    }
+                    yield return new OfficeApp(OfficeAppType.Excel, wb.FullName);
                 }
             }
         }
 
-        public IEnumerable<IOfficeApp> FetchNewPowerPointApplications(List<string> openApps)
+        public IEnumerable<IOfficeApp> TryFetchPowerPointApplicationsOnStartup()
         {
-            var ppApp = (PowerPoint.Application)Marshal2.GetActiveObject("PowerPoint.Application");
-            if (ppApp != null)
+            if (ppApp != null && ppApp.Presentations.Count > 0)
             {
                 RegisterPowerPointAppClosedEvent(ppApp);
                 foreach (PowerPoint.Presentation p in ppApp.Presentations)
                 {
-                    if (!openApps.Contains(p.FullName))
-                        yield return new OfficeApp(OfficeAppType.PowerPoint, p.FullName);
+                    yield return new OfficeApp(OfficeAppType.PowerPoint, p.FullName);
                 }
             }
+        }
+
+        public IOfficeApp FetchNewWordApplication(int numAppsAlreadyKnown)
+        {
+            while (wordApp.Documents.Count == numAppsAlreadyKnown || wordApp == null)
+            {
+                Thread.Sleep(100);
+                wordApp = (Word.Application)Marshal2.GetActiveObject("Word.Application");
+            }
+            RegisterWordAppClosedEvent(wordApp);
+            var doc = wordApp.Documents[1];
+            return new OfficeApp(OfficeAppType.Word, doc.FullName);
+        }
+
+        public IOfficeApp FetchNewExcelApplication(int numAppsAlreadyKnown)
+        {
+            while (xlApp.Workbooks.Count == numAppsAlreadyKnown || xlApp == null)
+            {
+                Thread.Sleep(100);
+                xlApp = (Excel.Application)Marshal2.GetActiveObject("Excel.Application");
+            }
+            RegisterExcelAppClosedEvent(xlApp);
+            var wb = xlApp.Workbooks[xlApp.Workbooks.Count];
+            var x = wb.Name;
+            var y = wb.Names;
+            return new OfficeApp(OfficeAppType.Excel, wb.FullName);
+        }
+
+        public IOfficeApp FetchNewPowerPointApplication(int numAppsAlreadyKnown)
+        {
+            while (ppApp.Presentations.Count == numAppsAlreadyKnown || ppApp == null)
+            {
+                Thread.Sleep(100);
+                ppApp = (PowerPoint.Application)Marshal2.GetActiveObject("PowerPoint.Application");
+            }
+            RegisterPowerPointAppClosedEvent(ppApp);
+            var pres = wordApp.Documents[ppApp.Presentations.Count];
+            return new OfficeApp(OfficeAppType.PowerPoint, pres.FullName);
         }
 
         private void RegisterWordAppClosedEvent(Word.Application app)

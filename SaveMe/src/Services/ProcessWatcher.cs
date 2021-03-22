@@ -34,6 +34,7 @@ namespace src.Services
         {
             var newProcessName = e.NewEvent.Properties["ProcessName"].Value.ToString();
             var newAppName = NewProcessEvents.Keys.ToList().Find(c => newProcessName.Contains(c));
+            var newProcessId = Convert.ToInt32(e.NewEvent.Properties["ProcessId"].Value);
             if (newAppName != null)
             {
                 NewProcessEvents[newAppName]();

@@ -36,20 +36,21 @@ namespace src.Presenters
 
         private void HandleAppOpened(object sender, AppOpenedEventArgs e)
         {
-            var openAppNames = OpenApps.Select(app => app.Name).ToList();
-
+            var numOfWordAppsKnown = OpenApps.Where(app => app.Type == OfficeAppType.Word).Count();
+            var numOfExcelAppsKnown = OpenApps.Where(app => app.Type == OfficeAppType.Excel).Count();
+            var numOfPowerPointAppsKnown = OpenApps.Where(app => app.Type == OfficeAppType.PowerPoint).Count();
             switch (e.AppType)
             {
                 case OfficeAppType.Excel:
-                    AddNewApps(_provider.FetchNewExcelApplications, openAppNames);
+                    AddNewlyStartedApp(_provider.FetchNewExcelApplication, numOfExcelAppsKnown);
                     break;
 
                 case OfficeAppType.Word:
-                    AddNewApps(_provider.FetchNewWordApplications, openAppNames);
+                    AddNewlyStartedApp(_provider.FetchNewWordApplication, numOfWordAppsKnown);
                     break;
 
                 case OfficeAppType.PowerPoint:
-                    AddNewApps(_provider.FetchNewPowerPointApplications, openAppNames);
+                    AddNewlyStartedApp(_provider.FetchNewPowerPointApplication, numOfPowerPointAppsKnown);
                     break;
             };
         }
@@ -60,20 +61,27 @@ namespace src.Presenters
             RemoveItemFromViewListBox($"{e.Type} - {e.Name}");
         }
 
-        public void AddNewApps(Func<List<string>, IEnumerable<IOfficeApp>> getApps, List<string> openAppNames)
+        private void AddNewlyStartedApp(Func<int, IOfficeApp> getNewApp, int numAppsCurrentlyKnown)
         {
-            foreach (var app in getApps(openAppNames))
+            var newApp = getNewApp(numAppsCurrentlyKnown);
+            OpenApps.Add(newApp);
+            AddNewAppToViewListBox(newApp);
+        }
+
+        public void AddAppsOnStartup(Func<IEnumerable<IOfficeApp>> getApps)
+        {
+            foreach (var app in getApps())
             {
                 OpenApps.Add(app);
-                AddNewAppToViewListBox($"{app.Type} - {app.Name}");
+                AddNewAppToViewListBox(app);
             }
         }
 
-        private void AddNewAppToViewListBox(string newApp)
+        private void AddNewAppToViewListBox(IOfficeApp app)
         {
             View.Invoke(new MethodInvoker(delegate ()
             {
-                View.ListOfOpenOfficeApplications.Items.Add(newApp);
+                View.ListOfOpenOfficeApplications.Items.Add($"{app.Type} - {app.Name}");
             }));
         }
 
@@ -92,10 +100,9 @@ namespace src.Presenters
 
         private void View_Load(object sender, EventArgs e)
         {
-            var openAppNames = OpenApps.Select(app => app.Name).ToList();
-            AddNewApps(_provider.FetchNewExcelApplications, openAppNames);
-            AddNewApps(_provider.FetchNewWordApplications, openAppNames);
-            AddNewApps(_provider.FetchNewWordApplications, openAppNames);
+            AddAppsOnStartup(_provider.TryFetchExcelApplicationsOnStartup);
+            AddAppsOnStartup(_provider.TryFetchPowerPointApplicationsOnStartup);
+            AddAppsOnStartup(_provider.TryFetchWordApplicationsOnStartup);
         }
 
         public void SubscribeToViewEvents()
@@ -112,6 +119,12 @@ namespace src.Presenters
         {
             var newFreq = AutoSaveFrequencies._[View.DropDownAutoSaveFrequency.SelectedItem.ToString()];
             CurrentAutoSaveFrequency = newFreq;
+        }
+
+        private List<string> GetOpenAppNames(OfficeAppType type)
+        {
+            return OpenApps.Where(app => app.Type == type)
+                .Select(app => app.Name).ToList();
         }
     }
 }

@@ -10,8 +10,11 @@ namespace src.Services
         event EventHandler<AppClosedEventArgs> AppClosedEvent;
         event EventHandler<AppOpenedEventArgs> AppOpenedEvent;
 
-        IEnumerable<IOfficeApp> FetchNewExcelApplications(List<string> openApps);
-        IEnumerable<IOfficeApp> FetchNewPowerPointApplications(List<string> openApps);
-        IEnumerable<IOfficeApp> FetchNewWordApplications(List<string> openApps);
+        IOfficeApp FetchNewExcelApplication(int numAppsAlreadyKnown);
+        IOfficeApp FetchNewPowerPointApplication(int numAppsAlreadyKnown);
+        IOfficeApp FetchNewWordApplication(int numAppsAlreadyKnown);
+        IEnumerable<IOfficeApp> TryFetchExcelApplicationsOnStartup();
+        IEnumerable<IOfficeApp> TryFetchPowerPointApplicationsOnStartup();
+        IEnumerable<IOfficeApp> TryFetchWordApplicationsOnStartup();
     }
 }
