@@ -24,7 +24,7 @@ namespace src.Presenters
         public TView View { get; set; }
         public System.Threading.Timer Timer { get; private set; }
         public int CurrentAutoSaveFrequency { get; private set; }
-        private List<IOfficeApp> OpenApps { get; set; } = new();
+        public List<IOfficeApp> OpenApps { get; set; } = new();
 
         private readonly IOfficeAppProvider _provider;
 
@@ -35,7 +35,7 @@ namespace src.Presenters
             _provider.AppOpenedEvent += HandleAppOpened;
         }
 
-        private void HandleAppOpened(object sender, AppOpenedEventArgs e)
+        public void HandleAppOpened(object sender, AppOpenedEventArgs e)
         {
             var numOfWordAppsKnown = OpenApps.Where(app => app.Type == OfficeAppType.Word).Count();
             var numOfExcelAppsKnown = OpenApps.Where(app => app.Type == OfficeAppType.Excel).Count();
@@ -56,7 +56,7 @@ namespace src.Presenters
             };
         }
 
-        private void HandleAppClosed(object sender, AppClosedEventArgs e)
+        public void HandleAppClosed(object sender, AppClosedEventArgs e)
         {
             OpenApps.RemoveAll(app => app.Name == e.Name);
             RemoveItemFromViewListBox($"{e.Type} - {e.Name}");
@@ -66,33 +66,26 @@ namespace src.Presenters
         {
             var newApp = getNewApp(numAppsCurrentlyKnown);
             OpenApps.Add(newApp);
-            AddNewAppToViewListBox(newApp);
+            AddItemToListViewBox($"{newApp.Type} - {newApp.Name}");
         }
 
         public void AddAppsOnStartup(Func<IEnumerable<IOfficeApp>> getApps)
         {
             foreach (var app in getApps())
-
             {
                 OpenApps.Add(app);
-                AddNewAppToViewListBox(app);
+                AddItemToListViewBox($"{app.Type} - {app.Name}");
             }
-        }
-
-        private void AddNewAppToViewListBox(IOfficeApp app)
-        {
-            View.Invoke(new MethodInvoker(delegate ()
-            {
-                View.ListOfOpenOfficeApplications.Items.Add($"{app.Type} - {app.Name}");
-            }));
         }
 
         private void RemoveItemFromViewListBox(string closedAppName)
         {
-            View.Invoke(new MethodInvoker(delegate ()
-            {
-                View.ListOfOpenOfficeApplications.Items.Remove(closedAppName);
-            }));
+            View.ListOfOpenOfficeApplications.Items.Remove(closedAppName);
+        }
+
+        private void AddItemToListViewBox(string appName)
+        {
+            View.ListOfOpenOfficeApplications.Items.Add(appName);
         }
 
         public void InitialSetup()
@@ -127,14 +120,16 @@ namespace src.Presenters
             await Task.Run(() => OfficeAppSaver.SaveAll());
         }
 
-        public void View_AutoSaveFrequencySelected(object sender, EventArgs e)
+        private void View_AutoSaveFrequencySelected(object sender, EventArgs e)
         {
             ChangeAutoSaveFrequency();
         }
 
         public void ChangeAutoSaveFrequency()
         {
-            var newFreq = AutoSaveFrequencies._[View.DropDownAutoSaveFrequency.SelectedItem.ToString()];
+            var index = View.DropDownAutoSaveFrequencies.SelectedIndex;
+            var selection = View.DropDownAutoSaveFrequencies.Items[index].ToString();
+            var newFreq = AutoSaveFrequencies.Frequencies[selection];
             CurrentAutoSaveFrequency = newFreq;
         }
     }

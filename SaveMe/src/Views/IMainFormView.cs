@@ -6,8 +6,10 @@ namespace src
 {
     public interface IMainFormView
     {
-        ListBox DropDownAutoSaveFrequency { get; set; }
+        ListBox DropDownAutoSaveFrequencies { get; set; }
         ListBox ListOfOpenOfficeApplications { get; set; }
+        Button SaveSelectedButton { get; set; }
+        Button SaveAllButton { get; set; }
 
         event EventHandler AutoSaveFrequencySelected;
 

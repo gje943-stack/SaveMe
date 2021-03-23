@@ -38,10 +38,22 @@ namespace src
             set { listAllApplications = value; }
         }
 
-        public ListBox DropDownAutoSaveFrequency
+        public ListBox DropDownAutoSaveFrequencies
         {
             get { return dropdownAutoSaveFrequencies; }
             set { dropdownAutoSaveFrequencies = value; }
+        }
+
+        public Button SaveSelectedButton
+        {
+            get { return btnSaveSelected; }
+            set { btnSaveSelected = value; }
+        }
+
+        public Button SaveAllButton
+        {
+            get { return btnSaveAll; }
+            set { btnSaveAll = value; }
         }
     }
 }
