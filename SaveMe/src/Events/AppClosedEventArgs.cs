@@ -15,6 +15,7 @@ namespace src.Events
         public AppClosedEventArgs(string name, OfficeAppType type)
         {
             Name = name;
+            Type = type;
         }
     }
 }

@@ -7,12 +7,14 @@ namespace src
     public interface IMainFormView
     {
         ListBox DropDownAutoSaveFrequency { get; set; }
-        CheckedListBox ListOfOpenOfficeApplications { get; set; }
-        //BindingList<string> OpenOfficeAppNames { get; set; }
+        ListBox ListOfOpenOfficeApplications { get; set; }
 
         event EventHandler AutoSaveFrequencySelected;
 
         event EventHandler Load;
+
+        event EventHandler SaveSelectedButtonClicked;
+        event EventHandler SaveAllButtonClicked;
 
         void InitializePresenter();
 

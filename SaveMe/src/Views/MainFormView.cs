@@ -17,13 +17,14 @@ namespace src
     public partial class MainFormView : Form, IMainFormView
     {
         public event EventHandler AutoSaveFrequencySelected;
-        //public BindingList<string> OpenOfficeAppNames { get; set; } = new();
+        public event EventHandler SaveSelectedButtonClicked;
+        public event EventHandler SaveAllButtonClicked;
+
 
         public MainFormView()
         {
             InitializeComponent();
             InitializePresenter();
-            //listAllApplications.DataSource = OpenOfficeAppNames;
         }
 
         public void InitializePresenter()
@@ -31,7 +32,7 @@ namespace src
             PresenterFactory.CreateForView(this);
         }
 
-        public CheckedListBox ListOfOpenOfficeApplications
+        public ListBox ListOfOpenOfficeApplications
         {
             get { return listAllApplications; }
             set { listAllApplications = value; }

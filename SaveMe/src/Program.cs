@@ -30,6 +30,7 @@ namespace src
                 })
                 .Build();
 
+            VaultLocationConfig.ConfigureVault();
             PresenterFactory.SetHost(host);
             var app = ActivatorUtilities.GetServiceOrCreateInstance<MainFormView>(host.Services);
             Application.Run(app);

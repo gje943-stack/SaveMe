@@ -10,6 +10,7 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0" />
+		<PackageReference Include="MicrosoftOfficeCore" Version="15.0.0" />
 		<PackageReference Include="Prism.Core" Version="8.0.0.1909" />
 		<PackageReference Include="System.Management" Version="5.0.0" />
 	</ItemGroup>

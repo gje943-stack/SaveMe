@@ -1,4 +1,6 @@
 ﻿
+using System;
+
 namespace src
 {
     partial class MainFormView
@@ -35,9 +37,7 @@ namespace src
             this.labelSaveFrequency = new System.Windows.Forms.Label();
             this.btnSaveAll = new System.Windows.Forms.Button();
             this.btnSaveSelected = new System.Windows.Forms.Button();
-            this.btnSelectNone = new System.Windows.Forms.Button();
-            this.btnSelectAll = new System.Windows.Forms.Button();
-            this.listAllApplications = new System.Windows.Forms.CheckedListBox();
+            this.listAllApplications = new System.Windows.Forms.ListBox();
             this.tlpMainLayout.SuspendLayout();
             this.panelButtonsContainer.SuspendLayout();
             this.SuspendLayout();
@@ -64,8 +64,6 @@ namespace src
             this.panelButtonsContainer.Controls.Add(this.labelSaveFrequency);
             this.panelButtonsContainer.Controls.Add(this.btnSaveAll);
             this.panelButtonsContainer.Controls.Add(this.btnSaveSelected);
-            this.panelButtonsContainer.Controls.Add(this.btnSelectNone);
-            this.panelButtonsContainer.Controls.Add(this.btnSelectAll);
             this.panelButtonsContainer.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelButtonsContainer.Location = new System.Drawing.Point(3, 3);
             this.panelButtonsContainer.Name = "panelButtonsContainer";
@@ -96,48 +94,33 @@ namespace src
             // 
             // btnSaveAll
             // 
-            this.btnSaveAll.Location = new System.Drawing.Point(282, 0);
+            this.btnSaveAll.Location = new System.Drawing.Point(196, 3);
             this.btnSaveAll.Name = "btnSaveAll";
             this.btnSaveAll.Size = new System.Drawing.Size(80, 31);
             this.btnSaveAll.TabIndex = 3;
             this.btnSaveAll.Text = "Save All";
             this.btnSaveAll.UseVisualStyleBackColor = true;
+            this.btnSaveAll.Click += BtnSaveAll_Click;
             // 
             // btnSaveSelected
             // 
-            this.btnSaveSelected.Location = new System.Drawing.Point(186, 0);
+            this.btnSaveSelected.Location = new System.Drawing.Point(95, 3);
             this.btnSaveSelected.Name = "btnSaveSelected";
             this.btnSaveSelected.Size = new System.Drawing.Size(90, 31);
             this.btnSaveSelected.TabIndex = 2;
             this.btnSaveSelected.Text = "Save Selected";
             this.btnSaveSelected.UseVisualStyleBackColor = true;
-            // 
-            // btnSelectNone
-            // 
-            this.btnSelectNone.Location = new System.Drawing.Point(90, 0);
-            this.btnSelectNone.Name = "btnSelectNone";
-            this.btnSelectNone.Size = new System.Drawing.Size(90, 31);
-            this.btnSelectNone.TabIndex = 1;
-            this.btnSelectNone.Text = "Select None";
-            this.btnSelectNone.UseVisualStyleBackColor = true;
-            // 
-            // btnSelectAll
-            // 
-            this.btnSelectAll.Location = new System.Drawing.Point(0, 0);
-            this.btnSelectAll.Name = "btnSelectAll";
-            this.btnSelectAll.Size = new System.Drawing.Size(84, 31);
-            this.btnSelectAll.TabIndex = 0;
-            this.btnSelectAll.Text = "Select All";
-            this.btnSelectAll.UseVisualStyleBackColor = true;
+            this.btnSaveSelected.Click += BtnSaveSelected_Click;
             // 
             // listAllApplications
             // 
             this.listAllApplications.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listAllApplications.FormattingEnabled = true;
+            this.listAllApplications.ItemHeight = 15;
             this.listAllApplications.Location = new System.Drawing.Point(3, 72);
             this.listAllApplications.Name = "listAllApplications";
             this.listAllApplications.Size = new System.Drawing.Size(362, 264);
-            this.listAllApplications.TabIndex = 0;
+            this.listAllApplications.TabIndex = 2;
             // 
             // MainFormView
             // 
@@ -154,17 +137,25 @@ namespace src
 
         }
 
+        private void BtnSaveAll_Click(object sender, System.EventArgs e)
+        {
+            SaveAllButtonClicked?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void BtnSaveSelected_Click(object sender, System.EventArgs e)
+        {
+            SaveSelectedButtonClicked?.Invoke(this, EventArgs.Empty);
+        }
+
         #endregion
 
         private System.Windows.Forms.TableLayoutPanel tlpMainLayout;
-        private System.Windows.Forms.CheckedListBox listAllApplications;
         private System.Windows.Forms.Panel panelButtonsContainer;
         private System.Windows.Forms.Button btnSaveAll;
         private System.Windows.Forms.Button btnSaveSelected;
-        private System.Windows.Forms.Button btnSelectNone;
-        private System.Windows.Forms.Button btnSelectAll;
         private System.Windows.Forms.Label labelSaveFrequency;
         internal System.Windows.Forms.ListBox dropdownAutoSaveFrequencies;
+        private System.Windows.Forms.ListBox listAllApplications;
     }
 }
 

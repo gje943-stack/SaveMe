@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace src.Presenters
@@ -71,6 +72,7 @@ namespace src.Presenters
         public void AddAppsOnStartup(Func<IEnumerable<IOfficeApp>> getApps)
         {
             foreach (var app in getApps())
+
             {
                 OpenApps.Add(app);
                 AddNewAppToViewListBox(app);
@@ -85,11 +87,11 @@ namespace src.Presenters
             }));
         }
 
-        private void RemoveItemFromViewListBox(string closedApp)
+        private void RemoveItemFromViewListBox(string closedAppName)
         {
             View.Invoke(new MethodInvoker(delegate ()
             {
-                View.ListOfOpenOfficeApplications.Items.Remove($"{closedApp}");
+                View.ListOfOpenOfficeApplications.Items.Remove(closedAppName);
             }));
         }
 
@@ -103,11 +105,26 @@ namespace src.Presenters
             AddAppsOnStartup(_provider.TryFetchExcelApplicationsOnStartup);
             AddAppsOnStartup(_provider.TryFetchPowerPointApplicationsOnStartup);
             AddAppsOnStartup(_provider.TryFetchWordApplicationsOnStartup);
+            SubscribeToViewEvents();
         }
 
         public void SubscribeToViewEvents()
         {
             View.AutoSaveFrequencySelected += View_AutoSaveFrequencySelected;
+            View.SaveAllButtonClicked += async (s, e) => await SaveAllOpenApps(s, e);
+            View.SaveSelectedButtonClicked += async (s, e) => await SaveSingleApp(s, e);
+        }
+
+        private async Task SaveSingleApp(object s, EventArgs e)
+        {
+            var index = View.ListOfOpenOfficeApplications.SelectedIndex;
+            var appToSave = OpenApps[index];
+            await Task.Run(() => OfficeAppSaver.SaveSingleApplication(appToSave));
+        }
+
+        private async Task SaveAllOpenApps(object sender, EventArgs e)
+        {
+            await Task.Run(() => OfficeAppSaver.SaveAll());
         }
 
         public void View_AutoSaveFrequencySelected(object sender, EventArgs e)
@@ -119,12 +136,6 @@ namespace src.Presenters
         {
             var newFreq = AutoSaveFrequencies._[View.DropDownAutoSaveFrequency.SelectedItem.ToString()];
             CurrentAutoSaveFrequency = newFreq;
-        }
-
-        private List<string> GetOpenAppNames(OfficeAppType type)
-        {
-            return OpenApps.Where(app => app.Type == type)
-                .Select(app => app.Name).ToList();
         }
     }
 }

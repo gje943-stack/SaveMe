@@ -70,40 +70,48 @@ namespace src.Services
 
         public IOfficeApp FetchNewWordApplication(int numAppsAlreadyKnown)
         {
-            while (wordApp.Documents.Count == numAppsAlreadyKnown || wordApp == null)
+            if(wordApp == null)
             {
-                Thread.Sleep(100);
                 wordApp = (Word.Application)Marshal2.GetActiveObject("Word.Application");
             }
+            while (wordApp.Documents.Count == numAppsAlreadyKnown)
+            {
+                Thread.Sleep(100);
+            }
             RegisterWordAppClosedEvent(wordApp);
-            var doc = wordApp.Documents[1];
-            return new OfficeApp(OfficeAppType.Word, doc.FullName);
+            var newDoc = wordApp.Documents[1];
+            return new OfficeApp(OfficeAppType.Word, newDoc.FullName);
         }
 
         public IOfficeApp FetchNewExcelApplication(int numAppsAlreadyKnown)
         {
-            while (xlApp.Workbooks.Count == numAppsAlreadyKnown || xlApp == null)
+            if(xlApp == null)
+            {
+                xlApp = (Excel.Application)Marshal2.GetActiveObject("Excel.Application");
+            }
+            while (xlApp.Workbooks.Count == numAppsAlreadyKnown)
             {
                 Thread.Sleep(100);
                 xlApp = (Excel.Application)Marshal2.GetActiveObject("Excel.Application");
             }
             RegisterExcelAppClosedEvent(xlApp);
-            var wb = xlApp.Workbooks[xlApp.Workbooks.Count];
-            var x = wb.Name;
-            var y = wb.Names;
-            return new OfficeApp(OfficeAppType.Excel, wb.FullName);
+            var newWb = xlApp.Workbooks[xlApp.Workbooks.Count];
+            return new OfficeApp(OfficeAppType.Excel, newWb.FullName);
         }
 
         public IOfficeApp FetchNewPowerPointApplication(int numAppsAlreadyKnown)
         {
-            while (ppApp.Presentations.Count == numAppsAlreadyKnown || ppApp == null)
+            if(ppApp == null)
             {
-                Thread.Sleep(100);
                 ppApp = (PowerPoint.Application)Marshal2.GetActiveObject("PowerPoint.Application");
             }
+            while (ppApp.Presentations.Count == numAppsAlreadyKnown)
+            {
+                Thread.Sleep(100);
+            }
             RegisterPowerPointAppClosedEvent(ppApp);
-            var pres = wordApp.Documents[ppApp.Presentations.Count];
-            return new OfficeApp(OfficeAppType.PowerPoint, pres.FullName);
+            var newPres = ppApp.Presentations[ppApp.Presentations.Count];
+            return new OfficeApp(OfficeAppType.PowerPoint, newPres.FullName);
         }
 
         private void RegisterWordAppClosedEvent(Word.Application app)
@@ -118,7 +126,7 @@ namespace src.Services
 
         private void RegisterPowerPointAppClosedEvent(PowerPoint.Application app)
         {
-            app.PresentationBeforeClose += (PowerPoint.Presentation pres, ref bool cancel) => AppClosedEvent?.Invoke(this, new AppClosedEventArgs(pres.FullName, OfficeAppType.Word));
+            app.PresentationBeforeClose += (PowerPoint.Presentation pres, ref bool cancel) => AppClosedEvent?.Invoke(this, new AppClosedEventArgs(pres.FullName, OfficeAppType.PowerPoint));
         }
     }
 }
