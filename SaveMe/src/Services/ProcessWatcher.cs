@@ -30,7 +30,7 @@ namespace src.Services
             };
         }
 
-        private void _processStartEvent_EventArrived(object sender, EventArrivedEventArgs e)
+        public void _processStartEvent_EventArrived(object sender, EventArrivedEventArgs e)
         {
             var newProcessName = e.NewEvent.Properties["ProcessName"].Value.ToString();
             var newAppName = NewProcessEvents.Keys.ToList().Find(c => newProcessName.Contains(c));
