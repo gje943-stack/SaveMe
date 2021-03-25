@@ -34,6 +34,8 @@ namespace Test
             _sut.NewProcessEvent += (s, e) =>
             {
                 Assert.Equal(OfficeAppType.Excel, e.ProcessType);
+                app.Quit();
+                app = null;
             };
 
             app.Workbooks.Open(testFile.Name);
@@ -51,6 +53,8 @@ namespace Test
             _sut.NewProcessEvent += (s, e) =>
             {
                 Assert.Equal(OfficeAppType.Word, e.ProcessType);
+                app.Quit();
+                app = null;
             };
 
             app.Documents.Open(testFile.Name);
@@ -68,6 +72,8 @@ namespace Test
             _sut.NewProcessEvent += (s, e) =>
             {
                 Assert.Equal(OfficeAppType.PowerPoint, e.ProcessType);
+                app.Quit();
+                app = null;
             };
 
             app.Presentations.Open(testFile.Name);

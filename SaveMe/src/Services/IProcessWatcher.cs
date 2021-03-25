@@ -1,5 +1,6 @@
 ﻿using src.Events;
 using System;
+using System.Management;
 
 namespace src.Services
 {
